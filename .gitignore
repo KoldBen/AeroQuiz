@@ -1,0 +1,18 @@
+# Git Ignore File
+node_modules/
+dist/
+build/
+.env
+
+# Python
+__pycache__/
+*.pyc
+venv/
+env/
+.venv/
+backend/temp_uploads/
+backend/aeroquiz.db
+
+# OS
+.DS_Store
+Thumbs.db
