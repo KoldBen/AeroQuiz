@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-function QuizInterface({ quiz, onReset }) {
+function QuizInterface({ quiz, onReset, onGenerateMore }) {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [selectedOption, setSelectedOption] = useState(null);
     const [isAnswered, setIsAnswered] = useState(false);
@@ -48,7 +48,10 @@ function QuizInterface({ quiz, onReset }) {
                 <p style={{ marginBottom: '2rem', color: 'var(--text-muted)' }}>
                     {score === questions.length ? "Perfect score! You've mastered this topic." : "Good effort! Try again to boost your understanding."}
                 </p>
-                <button className="btn-primary" onClick={onReset}>Generate Another Quiz</button>
+                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                    <button className="btn-secondary" onClick={onReset}>Choose New Topic</button>
+                    <button className="btn-primary" onClick={onGenerateMore}>Generate Another on Same Topic</button>
+                </div>
             </div>
         );
     }

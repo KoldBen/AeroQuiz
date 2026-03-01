@@ -10,6 +10,7 @@ __pycache__/
 venv/
 env/
 .venv/
+backend/error_log.txt
 backend/temp_uploads/
 backend/aeroquiz.db
 

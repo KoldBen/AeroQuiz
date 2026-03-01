@@ -1,16 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
 
 :root {
-  --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-  --glass-bg: rgba(255, 255, 255, 0.04);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-blur: blur(16px);
-  --text-main: #ffffff;
-  --text-muted: #a0a0b8;
-  --accent-color: #00f2fe;
-  --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  --success-color: #00e676;
+  --bg-color: #05050a;
+  --panel-bg: rgba(10, 15, 30, 0.7);
+  --accent-color: #1a237e;
+  --accent-gradient: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
+  --text-main: #f0f0f5;
+  --text-muted: #a0a0b0;
+  --glass-bg: rgba(20, 25, 45, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --success-color: #00c853;
   --error-color: #ff3d00;
+  --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
 }
 
 * {
@@ -21,7 +22,9 @@
 
 body {
   font-family: 'Outfit', sans-serif;
-  background: var(--bg-gradient);
+  background-color: var(--bg-color);
+  background-image: radial-gradient(circle at top right, rgba(26, 35, 126, 0.2), transparent),
+    radial-gradient(circle at bottom left, rgba(10, 11, 32, 0.5), transparent);
   background-attachment: fixed;
   color: var(--text-main);
   min-height: 100vh;
@@ -64,18 +67,20 @@ header p {
 /* Glass Card */
 .glass-panel {
   background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
   border-radius: 24px;
   padding: 2.5rem;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  box-shadow: var(--shadow);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   animation: fadeInUp 0.8s ease;
 }
 
 /* Utilities */
-.text-center { text-align: center; }
+.text-center {
+  text-align: center;
+}
 
 /* Buttons */
 .btn-primary {
@@ -94,7 +99,7 @@ header p {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 242, 254, 0.5);
+  box-shadow: 0 6px 20px rgba(26, 35, 126, 0.5);
 }
 
 .btn-primary:active {
@@ -115,23 +120,68 @@ header p {
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
   transform: translateY(-2px);
 }
 
+/* Form Elements */
+.input-field {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 1rem;
+  color: var(--text-main);
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  resize: none;
+  min-height: 100px;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 10px rgba(26, 35, 126, 0.3);
+}
+
+
 /* Animations */
 @keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }

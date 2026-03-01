@@ -2,20 +2,51 @@ import React, { useState } from 'react';
 import UploadZone from './components/UploadZone';
 import LoadingScreen from './components/LoadingScreen';
 import QuizInterface from './components/QuizInterface';
-import { uploadFileForQuiz } from './api';
+import { uploadFileForQuiz, generateMoreQuestions } from './api';
+import logo from './assets/logo.png';
 import './index.css';
 
 function App() {
   const [appState, setAppState] = useState('upload'); // upload, loading, quiz, error
   const [quizData, setQuizData] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [lastUploadInfo, setLastUploadInfo] = useState(null);
+  const [lastNumQuestions, setLastNumQuestions] = useState(10);
 
-  const handleFileUpload = async (file) => {
+  const handleFileUpload = async (file, numQuestions, comments) => {
+    setAppState('loading');
+    setErrorMessage('');
+    setLastNumQuestions(numQuestions);
+
+    try {
+      const result = await uploadFileForQuiz(file, numQuestions, comments);
+      setQuizData(result.quiz);
+      setLastUploadInfo({
+        fileName: result.file_name,
+        mimeType: result.mime_type,
+        comments: comments
+      });
+      setAppState('quiz');
+    } catch (error) {
+      console.error(error);
+      setErrorMessage(error.message);
+      setAppState('error');
+    }
+  };
+
+  const handleGenerateMore = async () => {
+    if (!lastUploadInfo) return;
+
     setAppState('loading');
     setErrorMessage('');
 
     try {
-      const result = await uploadFileForQuiz(file);
+      const result = await generateMoreQuestions(
+        lastUploadInfo.fileName,
+        lastUploadInfo.mimeType,
+        lastNumQuestions,
+        lastUploadInfo.comments
+      );
       setQuizData(result.quiz);
       setAppState('quiz');
     } catch (error) {
@@ -29,13 +60,23 @@ function App() {
     setAppState('upload');
     setQuizData(null);
     setErrorMessage('');
+    setLastUploadInfo(null);
   };
+
 
   return (
     <>
       <header>
-        <h1>AeroQuiz</h1>
-        <p>Transform any document into an interactive quiz instantly.</p>
+        <img
+          src={logo}
+          alt="AeroQuiz Logo"
+          style={{
+            maxWidth: '400px',
+            margin: '0 auto 1.5rem auto',
+            display: 'block',
+            filter: 'drop-shadow(0 0 20px rgba(26, 35, 126, 0.5))'
+          }}
+        />
       </header>
 
       <main className="app-main">
@@ -44,7 +85,11 @@ function App() {
         {appState === 'loading' && <LoadingScreen />}
 
         {appState === 'quiz' && quizData && (
-          <QuizInterface quiz={quizData} onReset={resetApp} />
+          <QuizInterface
+            quiz={quizData}
+            onReset={resetApp}
+            onGenerateMore={handleGenerateMore}
+          />
         )}
 
         {appState === 'error' && (

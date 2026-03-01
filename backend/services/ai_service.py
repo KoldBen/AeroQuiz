@@ -1,30 +1,45 @@
 import os
 import json
-import google.generativeai as genai
+import base64
+import requests
 from typing import Dict, Any
+from dotenv import load_dotenv
+from PyPDF2 import PdfReader
 
-# Configure Gemini API
-api_key = os.getenv("GEMINI_API_KEY")
-if api_key:
-    genai.configure(api_key=api_key)
+load_dotenv()
 
-def generate_quiz_from_file(file_path: str, mime_type: str) -> Dict[str, Any]:
+# Configure OpenRouter API
+api_key = os.getenv("OPENROUTER_API_KEY")
+
+def extract_text_from_pdf(file_path: str) -> str:
+    """Extracts text content from a PDF file locally."""
+    try:
+        reader = PdfReader(file_path)
+        text = ""
+        for page in reader.pages:
+            text += page.extract_text() + "\n"
+        return text
+    except Exception as e:
+        print(f"Error extracting PDF text: {e}")
+        return ""
+
+def encode_image(image_path: str) -> str:
+    """Encodes an image to base64 string."""
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode('utf-8')
+
+def generate_quiz_from_file(file_path: str, mime_type: str, num_questions: int = 10, comments: str = "") -> Dict[str, Any]:
     """
-    Sends a file to the Gemini API and asks it to generate a quiz based on the content.
-    Expects a strict JSON output matching the requested schema.
+    Sends file content to OpenRouter API and asks it to generate a quiz.
+    Uses GPT-4o-mini for multimodal support (text or images).
     """
     if not api_key:
-        raise ValueError("GEMINI_API_KEY is not set. Please set the environment variable.")
-    
-    # Upload file to Gemini using generativeai File API
-    uploaded_file = genai.upload_file(path=file_path, mime_type=mime_type)
-    
-    # Choose model
-    model = genai.GenerativeModel('gemini-1.5-pro')
-    
+        raise ValueError("OPENROUTER_API_KEY is not set.")
+
+    instruction_text = f" User instructions: {comments}" if comments else ""
     prompt = (
-        "Analyze the attached document. Generate a 5-to-10-question multiple-choice quiz "
-        "based on the core concepts. Return the output strictly in JSON format without any markdown backticks "
+        f"Generate a {num_questions}-question multiple-choice quiz based on the provided content.{instruction_text} "
+        "Return the output strictly in JSON format without any markdown backticks "
         "or additional text, matching exactly this structure:\n"
         "{\n"
         '  "title": "A summary title for the quiz",\n'
@@ -38,14 +53,49 @@ def generate_quiz_from_file(file_path: str, mime_type: str) -> Dict[str, Any]:
         "}\n"
     )
 
-    response = model.generate_content([uploaded_file, prompt])
+    messages = [{"role": "user", "content": []}]
     
-    # Clean up the uploaded file from Google servers
-    genai.delete_file(uploaded_file.name)
+    if "pdf" in mime_type:
+        # Extract text for PDFs as many models prefer text input for large docs
+        text_content = extract_text_from_pdf(file_path)
+        messages[0]["content"].append({
+            "type": "text",
+            "text": f"{prompt}\n\nCONTENT TO ANALYZE:\n{text_content}"
+        })
+    else:
+        # Handle as image
+        base64_image = encode_image(file_path)
+        messages[0]["content"].append({
+            "type": "text",
+            "text": prompt
+        })
+        messages[0]["content"].append({
+            "type": "image_url",
+            "image_url": {
+                "url": f"data:{mime_type};base64,{base64_image}"
+            }
+        })
+
+    response = requests.post(
+        url="https://openrouter.ai/api/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "HTTP-Referer": "http://localhost:3000", # Optional
+            "X-Title": "AeroQuiz", # Optional
+        },
+        data=json.dumps({
+            "model": "openai/gpt-4o-mini", # Using a highly capable multimodal model
+            "messages": messages
+        })
+    )
+
+    if response.status_code != 200:
+        raise Exception(f"OpenRouter API Error: {response.status_code} - {response.text}")
+
+    response_data = response.json()
+    response_text = response_data['choices'][0]['message']['content'].strip()
     
-    # Parse the response as JSON
-    response_text = response.text.strip()
-    # Strip markdown if Gemini ignores the instruction
+    # Strip markdown if model ignores the instruction
     if response_text.startswith("```json"):
         response_text = response_text[7:]
     if response_text.endswith("```"):
