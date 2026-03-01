@@ -72,9 +72,9 @@ async def upload_file(
             db.add(db_question)
         db.commit()
         
-        # Clean up temp file
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        # Keep temp file for "Generate More" functionality
+        # if os.path.exists(file_path):
+        #     os.remove(file_path)
             
         return {"quiz_id": db_quiz.id, "quiz": quiz_data, "file_name": file.filename, "mime_type": mime_type}
     except Exception as e:
