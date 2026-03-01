@@ -185,3 +185,34 @@ header p {
     transform: scale(1);
   }
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  #root {
+    padding: 1rem;
+  }
+
+  header {
+    margin-bottom: 2rem;
+  }
+
+  header h1 {
+    font-size: 2.5rem;
+  }
+
+  .glass-panel {
+    padding: 1.5rem;
+    border-radius: 16px;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    padding: 1rem;
+  }
+
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+}
